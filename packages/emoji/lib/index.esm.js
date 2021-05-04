@@ -2,14 +2,13 @@ import React, { Component, useRef, useCallback, useEffect } from 'react';
 import { Map, List } from 'immutable';
 import keys from 'lodash-es/keys';
 import { Modifier, EditorState, genKey, SelectionState } from 'draft-js';
-import utils from '@draft-js-plugins/utils';
+import utils, { findWithRegex } from '@draft-js-plugins/utils';
 import emojiToolkit, { shortnameToUnicode, toShort, emojiList as emojiList$1, toImage, shortnameToImage } from 'emoji-toolkit';
 import PropTypes from 'prop-types';
 import data from 'emojibase-data/en/compact.json';
 import { FaSmile, FaPaw, FaUtensils, FaFutbol, FaPlane, FaBell, FaHeart, FaFlag } from 'react-icons/fa';
-import { Scrollbars } from 'react-custom-scrollbars';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 import toStyle from 'to-style';
-import findWithRegex from 'find-with-regex';
 import clsx from 'clsx';
 
 function _extends() {

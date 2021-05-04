@@ -3,10 +3,9 @@ import PropTypes from 'prop-types';
 import { DraftHandleValue, EditorState, SelectionState } from 'draft-js';
 import { AriaProps, EditorCommand } from '@draft-js-plugins/editor';
 import { EntryComponentProps } from './Entry/Entry';
-import { MentionData, MentionPluginStore } from '..';
+import { MentionData, MentionPluginStore, PopperOptions } from '..';
 import { PositionSuggestionsFn } from '../utils/positionSuggestions';
 import { MentionPluginTheme } from '../theme';
-export type { MentionPluginTheme };
 export interface MentionSuggestionCallbacks {
     keyBindingFn?(event: KeyboardEvent): EditorCommand | null | undefined;
     handleKeyCommand: undefined;
@@ -29,16 +28,18 @@ export interface MentionSuggestionsPubProps {
     onAddMention?(Mention: MentionData): void;
     popoverComponent?: ReactElement<PopoverComponentProps & RefAttributes<HTMLElement>>;
     entryComponent?: ComponentType<EntryComponentProps>;
+    popoverContainer?: ComponentType<PopperOptions>;
 }
 export interface MentionSuggestionsProps extends MentionSuggestionsPubProps {
     callbacks: MentionSuggestionCallbacks;
     store: MentionPluginStore;
-    positionSuggestions: PositionSuggestionsFn;
+    positionSuggestions?: PositionSuggestionsFn;
     ariaProps: AriaProps;
     theme: MentionPluginTheme;
     mentionPrefix: string;
     mentionTriggers: string[];
     entityMutability: 'SEGMENTED' | 'IMMUTABLE' | 'MUTABLE';
+    popperOptions?: PopperOptions;
 }
 export declare class MentionSuggestions extends Component<MentionSuggestionsProps> {
     static propTypes: {

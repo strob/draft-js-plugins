@@ -11,9 +11,8 @@ var emojiToolkit = require('emoji-toolkit');
 var PropTypes = require('prop-types');
 var data = require('emojibase-data/en/compact.json');
 var fa = require('react-icons/fa');
-var reactCustomScrollbars = require('react-custom-scrollbars');
+var reactCustomScrollbars2 = require('react-custom-scrollbars-2');
 var toStyle = require('to-style');
-var findWithRegex = require('find-with-regex');
 var clsx = require('clsx');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
@@ -25,7 +24,6 @@ var emojiToolkit__default = /*#__PURE__*/_interopDefaultLegacy(emojiToolkit);
 var PropTypes__default = /*#__PURE__*/_interopDefaultLegacy(PropTypes);
 var data__default = /*#__PURE__*/_interopDefaultLegacy(data);
 var toStyle__default = /*#__PURE__*/_interopDefaultLegacy(toStyle);
-var findWithRegex__default = /*#__PURE__*/_interopDefaultLegacy(findWithRegex);
 var clsx__default = /*#__PURE__*/_interopDefaultLegacy(clsx);
 
 function _extends() {
@@ -1129,7 +1127,7 @@ var Groups = /*#__PURE__*/function (_Component) {
       ref: function ref(element) {
         _this2.container = element;
       }
-    }, /*#__PURE__*/React__default['default'].createElement(reactCustomScrollbars.Scrollbars, {
+    }, /*#__PURE__*/React__default['default'].createElement(reactCustomScrollbars2.Scrollbars, {
       className: theme.emojiSelectPopoverScrollbarOuter,
       onScrollFrame: this.onScroll,
       renderTrackVertical: function renderTrackVertical() {
@@ -1725,12 +1723,12 @@ EmojiSelect.defaultProps = {
 var escapedFind = emojiToolkit__default['default'].escapeRegExp(emojiToolkit__default['default'].unicodeCharRegex());
 var search = new RegExp("<object[^>]*>.*?</object>|<span[^>]*>.*?</span>|<(?:object|embed|svg|img|div|span|p|a)[^>]*>|(" + escapedFind + ")", 'gi');
 var emojiStrategy = (function (contentBlock, callback) {
-  findWithRegex__default['default'](search, contentBlock, callback);
+  utils.findWithRegex(search, contentBlock, callback);
 });
 
 var EMOJI_REGEX = /(\s|^):[\w]*:?/g;
 var emojiSuggestionsStrategy = (function (contentBlock, callback) {
-  findWithRegex__default['default'](EMOJI_REGEX, contentBlock, callback);
+  utils.findWithRegex(EMOJI_REGEX, contentBlock, callback);
 });
 
 var unicodeRegex = new RegExp(emojiToolkit__default['default'].regAscii, 'g');
@@ -1770,7 +1768,7 @@ function attachImmutableEntitiesToEmojis(editorState) {
         newContentState = draftJs.Modifier.replaceText(newContentState, selection, emojiText, undefined, entityKey);
       };
 
-      findWithRegex__default['default'](unicodeRegex, block, addEntityToEmoji);
+      utils.findWithRegex(unicodeRegex, block, addEntityToEmoji);
     }
   });
 

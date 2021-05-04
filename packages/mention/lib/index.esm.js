@@ -1,9 +1,11 @@
 import { Map } from 'immutable';
-import React, { useRef, useEffect, Component, useLayoutEffect } from 'react';
+import React, { useRef, useEffect, useState, Component, useLayoutEffect } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { Modifier, EditorState, genKey } from 'draft-js';
 import escapeRegExp from 'lodash-es/escapeRegExp';
+import { usePopper } from 'react-popper';
+import { once } from 'lodash-es';
 
 function _extends() {
   _extends = Object.assign || function (target) {
@@ -293,6 +295,68 @@ function DefaultEntryComponent(props) {
   }, mention.name));
 }
 
+var getRelativeParent = function getRelativeParent(element) {
+  if (!element) {
+    return null;
+  }
+
+  var position = window.getComputedStyle(element).getPropertyValue('position');
+
+  if (position !== 'static') {
+    return element;
+  }
+
+  return getRelativeParent(element.parentElement);
+};
+
+function positionSuggestions(_ref) {
+  var decoratorRect = _ref.decoratorRect,
+      popover = _ref.popover,
+      props = _ref.props;
+  var relativeParent = getRelativeParent(popover.parentElement);
+  var relativeRect;
+
+  if (relativeParent) {
+    var relativeParentRect = relativeParent.getBoundingClientRect();
+    relativeRect = {
+      scrollLeft: relativeParent.scrollLeft,
+      scrollTop: relativeParent.scrollTop,
+      left: decoratorRect.left - relativeParentRect.left,
+      top: decoratorRect.bottom - relativeParentRect.top
+    };
+  } else {
+    relativeRect = {
+      scrollTop: window.pageYOffset || document.documentElement.scrollTop,
+      scrollLeft: window.pageXOffset || document.documentElement.scrollLeft,
+      top: decoratorRect.bottom,
+      left: decoratorRect.left
+    };
+  }
+
+  var left = relativeRect.left + relativeRect.scrollLeft;
+  var top = relativeRect.top + relativeRect.scrollTop;
+  var transform;
+  var transition;
+
+  if (props.open) {
+    if (props.suggestions.length > 0) {
+      transform = 'scale(1)';
+      transition = 'all 0.25s cubic-bezier(.3,1.2,.2,1)';
+    } else {
+      transform = 'scale(0)';
+      transition = 'all 0.35s cubic-bezier(.3,1,.2,1)';
+    }
+  }
+
+  return {
+    left: left + "px",
+    top: top + "px",
+    transform: transform,
+    transformOrigin: '1em 0%',
+    transition: transition
+  };
+}
+
 var decodeOffsetKey = function decodeOffsetKey(offsetKey) {
   var _offsetKey$split = offsetKey.split('-'),
       blockKey = _offsetKey$split[0],
@@ -368,6 +432,38 @@ function getTriggerForMention(editorState, searches, mentionTriggers) {
     activeTrigger: activeTrigger
   };
 }
+
+function Popover(_ref) {
+  var store = _ref.store,
+      children = _ref.children,
+      className = _ref.className,
+      _ref$popperOptions = _ref.popperOptions,
+      popperOptions = _ref$popperOptions === void 0 ? {
+    placement: 'bottom-start'
+  } : _ref$popperOptions;
+
+  var _useState = useState(null),
+      popperElement = _useState[0],
+      setPopperElement = _useState[1];
+
+  var _usePopper = usePopper(store.getReferenceElement(), popperElement, popperOptions),
+      styles = _usePopper.styles,
+      attributes = _usePopper.attributes;
+
+  return /*#__PURE__*/React.createElement("div", _extends({
+    ref: setPopperElement,
+    style: styles.popper
+  }, attributes.popper, {
+    className: className
+  }), children);
+}
+
+var warning = once(function (text) {
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.warn(text);
+  }
+});
 
 var MentionSuggestions = /*#__PURE__*/function (_Component) {
   _inheritsLoose(MentionSuggestions, _Component);
@@ -608,7 +704,8 @@ var MentionSuggestions = /*#__PURE__*/function (_Component) {
       }
 
       var decoratorRect = this.props.store.getPortalClientRect(this.activeOffsetKey);
-      var newStyles = this.props.positionSuggestions({
+      var positionSuggestions$1 = this.props.positionSuggestions || positionSuggestions;
+      var newStyles = positionSuggestions$1({
         decoratorRect: decoratorRect,
         props: this.props,
         popover: this.popover
@@ -637,8 +734,10 @@ var MentionSuggestions = /*#__PURE__*/function (_Component) {
 
     var _this$props = this.props,
         entryComponent = _this$props.entryComponent,
-        _this$props$popoverCo = _this$props.popoverComponent,
-        popoverComponent = _this$props$popoverCo === void 0 ? /*#__PURE__*/React.createElement("div", null) : _this$props$popoverCo;
+        popoverComponent = _this$props.popoverComponent,
+        popperOptions = _this$props.popperOptions,
+        _this$props$popoverCo = _this$props.popoverContainer,
+        PopoverContainer = _this$props$popoverCo === void 0 ? Popover : _this$props$popoverCo;
         _this$props.onOpenChange;
         _this$props.onAddMention;
         _this$props.onSearchChange;
@@ -649,19 +748,41 @@ var MentionSuggestions = /*#__PURE__*/function (_Component) {
         theme = _this$props$theme === void 0 ? {} : _this$props$theme;
         _this$props.store;
         _this$props.entityMutability;
-        _this$props.positionSuggestions;
+        var positionSuggestions = _this$props.positionSuggestions;
         _this$props.mentionTriggers;
         _this$props.mentionPrefix;
-        var elementProps = _objectWithoutPropertiesLoose(_this$props, ["entryComponent", "popoverComponent", "onOpenChange", "onAddMention", "onSearchChange", "suggestions", "ariaProps", "callbacks", "theme", "store", "entityMutability", "positionSuggestions", "mentionTriggers", "mentionPrefix"]);
+        var elementProps = _objectWithoutPropertiesLoose(_this$props, ["entryComponent", "popoverComponent", "popperOptions", "popoverContainer", "onOpenChange", "onAddMention", "onSearchChange", "suggestions", "ariaProps", "callbacks", "theme", "store", "entityMutability", "positionSuggestions", "mentionTriggers", "mentionPrefix"]);
 
-    return /*#__PURE__*/React.cloneElement(popoverComponent, _extends({}, elementProps, {
+    if (popoverComponent || positionSuggestions) {
+      warning('The properties `popoverComponent` and `positionSuggestions` are deprecated and will be removed in @draft-js-plugins/mentions 6.0 . Use `popperOptions` instead');
+      return /*#__PURE__*/React.cloneElement(popoverComponent || /*#__PURE__*/React.createElement("div", null), _extends({}, elementProps, {
+        className: theme.mentionSuggestions,
+        role: 'listbox',
+        id: "mentions-list-" + this.key,
+        ref: function ref(element) {
+          _this2.popover = element;
+        }
+      }), this.props.suggestions.map(function (mention, index) {
+        return /*#__PURE__*/React.createElement(Entry, {
+          key: mention.id != null ? mention.id : mention.name,
+          onMentionSelect: _this2.onMentionSelect,
+          onMentionFocus: _this2.onMentionFocus,
+          isFocused: _this2.state.focusedOptionIndex === index,
+          mention: mention,
+          index: index,
+          id: "mention-option-" + _this2.key + "-" + index,
+          theme: theme,
+          searchValue: _this2.lastSearchValue,
+          entryComponent: entryComponent || DefaultEntryComponent
+        });
+      }));
+    }
+
+    return /*#__PURE__*/React.createElement(PopoverContainer, {
+      store: this.props.store,
       className: theme.mentionSuggestions,
-      role: 'listbox',
-      id: "mentions-list-" + this.key,
-      ref: function ref(element) {
-        _this2.popover = element;
-      }
-    }), this.props.suggestions.map(function (mention, index) {
+      popperOptions: popperOptions
+    }, this.props.suggestions.map(function (mention, index) {
       return /*#__PURE__*/React.createElement(Entry, {
         key: mention.id != null ? mention.id : mention.name,
         onMentionSelect: _this2.onMentionSelect,
@@ -695,6 +816,7 @@ function MentionSuggestionsPortal(props) {
 
   var searchPortalRef = function searchPortalRef(element) {
     searchPortal.current = element;
+    props.store.setReferenceElement(element);
   };
 
   var updatePortalClientRect = function updatePortalClientRect(currentProps) {
@@ -719,6 +841,7 @@ function MentionSuggestionsPortal(props) {
     return function () {
       props.store.unregister(props.offsetKey);
       props.store.setIsOpened(false);
+      props.store.setReferenceElement(null);
     };
   }, []);
   useEffect(function () {
@@ -727,68 +850,6 @@ function MentionSuggestionsPortal(props) {
   return /*#__PURE__*/React.createElement("span", {
     ref: searchPortalRef
   }, props.children);
-}
-
-var getRelativeParent = function getRelativeParent(element) {
-  if (!element) {
-    return null;
-  }
-
-  var position = window.getComputedStyle(element).getPropertyValue('position');
-
-  if (position !== 'static') {
-    return element;
-  }
-
-  return getRelativeParent(element.parentElement);
-};
-
-function positionSuggestions(_ref) {
-  var decoratorRect = _ref.decoratorRect,
-      popover = _ref.popover,
-      props = _ref.props;
-  var relativeParent = getRelativeParent(popover.parentElement);
-  var relativeRect;
-
-  if (relativeParent) {
-    var relativeParentRect = relativeParent.getBoundingClientRect();
-    relativeRect = {
-      scrollLeft: relativeParent.scrollLeft,
-      scrollTop: relativeParent.scrollTop,
-      left: decoratorRect.left - relativeParentRect.left,
-      top: decoratorRect.bottom - relativeParentRect.top
-    };
-  } else {
-    relativeRect = {
-      scrollTop: window.pageYOffset || document.documentElement.scrollTop,
-      scrollLeft: window.pageXOffset || document.documentElement.scrollLeft,
-      top: decoratorRect.bottom,
-      left: decoratorRect.left
-    };
-  }
-
-  var left = relativeRect.left + relativeRect.scrollLeft;
-  var top = relativeRect.top + relativeRect.scrollTop;
-  var transform;
-  var transition;
-
-  if (props.open) {
-    if (props.suggestions.length > 0) {
-      transform = 'scale(1)';
-      transition = 'all 0.25s cubic-bezier(.3,1.2,.2,1)';
-    } else {
-      transform = 'scale(0)';
-      transition = 'all 0.35s cubic-bezier(.3,1,.2,1)';
-    }
-  }
-
-  return {
-    left: left + "px",
-    top: top + "px",
-    transform: transform,
-    transformOrigin: '1em 0%',
-    transition: transition
-  };
 }
 
 var defaultRegExp = '[' + '\\w-' + // Latin-1 Supplement (letters only) - https://en.wikipedia.org/wiki/List_of_Unicode_characters#Latin-1_Supplement
@@ -917,6 +978,7 @@ var index = (function (config) {
   var escapedSearch;
   var clientRectFunctions = Map();
   var isOpened = false;
+  var referenceElement;
   var store = {
     getEditorState: undefined,
     setEditorState: undefined,
@@ -950,6 +1012,12 @@ var index = (function (config) {
     },
     setIsOpened: function setIsOpened(nextIsOpened) {
       isOpened = nextIsOpened;
+    },
+    getReferenceElement: function getReferenceElement() {
+      return referenceElement;
+    },
+    setReferenceElement: function setReferenceElement(element) {
+      referenceElement = element;
     }
   }; // Styles are overwritten instead of merged as merging causes a lot of confusion.
   //
@@ -963,8 +1031,7 @@ var index = (function (config) {
       mentionPrefix = _config$mentionPrefix === void 0 ? '' : _config$mentionPrefix,
       _config$theme = _config.theme,
       theme = _config$theme === void 0 ? defaultTheme : _config$theme,
-      _config$positionSugge = _config.positionSuggestions,
-      positionSuggestions$1 = _config$positionSugge === void 0 ? positionSuggestions : _config$positionSugge,
+      positionSuggestions = _config.positionSuggestions,
       mentionComponent = _config.mentionComponent,
       _config$mentionSugges = _config.mentionSuggestionsComponent,
       MentionSuggestionsComponent = _config$mentionSugges === void 0 ? MentionSuggestions : _config$mentionSugges,
@@ -975,7 +1042,8 @@ var index = (function (config) {
       _config$mentionRegExp = _config.mentionRegExp,
       mentionRegExp = _config$mentionRegExp === void 0 ? defaultRegExp : _config$mentionRegExp,
       _config$supportWhites = _config.supportWhitespace,
-      supportWhitespace = _config$supportWhites === void 0 ? false : _config$supportWhites;
+      supportWhitespace = _config$supportWhites === void 0 ? false : _config$supportWhites,
+      popperOptions = _config.popperOptions;
   var mentionTriggers = typeof mentionTrigger === 'string' ? [mentionTrigger] : mentionTrigger;
   var mentionSearchProps = {
     ariaProps: ariaProps,
@@ -983,9 +1051,10 @@ var index = (function (config) {
     theme: theme,
     store: store,
     entityMutability: entityMutability,
-    positionSuggestions: positionSuggestions$1,
+    positionSuggestions: positionSuggestions,
     mentionTriggers: mentionTriggers,
-    mentionPrefix: mentionPrefix
+    mentionPrefix: mentionPrefix,
+    popperOptions: popperOptions
   };
 
   var DecoratedMentionSuggestionsComponent = function DecoratedMentionSuggestionsComponent(props) {

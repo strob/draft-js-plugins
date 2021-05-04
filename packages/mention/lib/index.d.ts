@@ -1,3 +1,5 @@
+import * as PopperJS from '@popperjs/core';
+import { Modifier } from 'react-popper';
 import { Map } from 'immutable';
 import { ComponentType } from 'react';
 import { EditorState } from 'draft-js';
@@ -11,6 +13,10 @@ export { default as MentionSuggestions } from './MentionSuggestions/MentionSugge
 export { defaultTheme };
 export { addMention };
 export type { MentionPluginTheme };
+export declare type PopperOptions = Omit<Partial<PopperJS.Options>, 'modifiers'> & {
+    createPopper?: typeof PopperJS.createPopper;
+    modifiers?: ReadonlyArray<Modifier<unknown>>;
+};
 export interface MentionData {
     link?: string;
     avatar?: string;
@@ -34,6 +40,8 @@ export interface MentionPluginStore {
     unregister(offsetKey: string): void;
     getIsOpened(): boolean;
     setIsOpened(nextIsOpened: boolean): void;
+    getReferenceElement(): HTMLElement | null;
+    setReferenceElement(element: HTMLElement | null): void;
 }
 export interface MentionPluginConfig {
     mentionPrefix?: string;
@@ -45,6 +53,7 @@ export interface MentionPluginConfig {
     mentionTrigger?: string | string[];
     mentionRegExp?: string;
     supportWhitespace?: boolean;
+    popperOptions?: PopperOptions;
 }
 interface ClientRectFunction {
     (): ClientRect;

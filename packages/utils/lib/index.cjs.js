@@ -63,6 +63,23 @@ function createStore(initialState) {
   };
 }
 
+function findWithRegex(regex, contentBlock, callback) {
+  // Get the text from the contentBlock
+  var text = contentBlock.getText();
+  var matchArr;
+  var start; // Go through all matches in the text and return the indizes to the callback
+
+  while ((matchArr = regex.exec(text)) !== null) {
+    if (matchArr.index === regex.lastIndex) {
+      // eslint-disable-next-line no-param-reassign
+      regex.lastIndex += 1;
+    }
+
+    start = matchArr.index;
+    callback(start, start + matchArr[0].length);
+  }
+}
+
 var index = {
   decodeOffsetKey: function decodeOffsetKey(offsetKey) {
     var _offsetKey$split = offsetKey.split('-'),
@@ -119,3 +136,4 @@ var index = {
 
 exports.createStore = createStore;
 exports.default = index;
+exports.findWithRegex = findWithRegex;

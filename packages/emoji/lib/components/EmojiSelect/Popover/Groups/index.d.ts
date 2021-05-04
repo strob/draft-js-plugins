@@ -1,6 +1,6 @@
 import { Component, ComponentType, ReactElement, WheelEvent } from 'react';
 import PropTypes from 'prop-types';
-import { Scrollbars, positionValues } from 'react-custom-scrollbars';
+import { Scrollbars, positionValues } from 'react-custom-scrollbars-2';
 import { EmojiImageProps, EmojiPluginTheme, EmojiSelectGroup } from '../../../../index';
 import { EmojiStrategy } from '../../../../utils/createEmojisFromStrategy';
 import Entry from '../Entry';

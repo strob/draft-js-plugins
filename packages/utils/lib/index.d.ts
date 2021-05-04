@@ -1,6 +1,8 @@
 import { EditorState, EntityInstance } from 'draft-js';
 export type { Store } from './createStore';
 export { createStore } from './createStore';
+export type { StrategyCallback } from './findWithRegex';
+export { findWithRegex } from './findWithRegex';
 export interface DecodedOffset {
     blockKey: string;
     decoratorKey: number;
